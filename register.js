@@ -5,7 +5,7 @@ import {
   addDoc 
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-import { auth } from "./config.js";
+import { db , auth } from "./config.js";
 
 
 const form = document.querySelector("#form");
@@ -16,28 +16,24 @@ const password = document.querySelector("#password");
 
 const arr = [];
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  createUserWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  )
-  .then( async (userCredential) => {
-      const user = userCredential.user;
-      console.log(user);
-      firstName.value = "";
-      lastName.value = "";
-      email.value = "";
-      password.value = "";
+  try {
+        const userCredential = createUserWithEmailAndPassword(
+          auth,
+          email.value,
+          password.value
+        );
+            const user = userCredential.user;
+            console.log(user);
 
 
-      try {
         const docRef = await addDoc(collection(db, "Users"), {
           firstName : firstName.value,
           lastName : lastName.value,
           email : email.value,
-          password : password.value
+          password : password.value,
+          // uid : user.uid
         });
         console.log("Document with ID: ", docRef.id)
         arr.push({
@@ -47,15 +43,24 @@ form.addEventListener("submit", (event) => {
           password : password.value,
           id: docRef.id,
         });
+        setTimeout(function() {
+          window.location = 'login.html';
+        }, 1000);
+        
+        firstName.value = "";
+        lastName.value = "";
+        email.value = "";
+        password.value = "";
       } catch (error) {
+        const errorMessage = error.message;
         console.error("Firestore Database Error : ", error);
+        console.log(errorMessage);
       }
-  })
 
-  .catch((error) => {
-      const errorMessage = error.message;
-      console.log(errorMessage);
-  });
+  // .catch((error) => {
+  //     const errorMessage = error.message;
+  //     console.log(errorMessage);
+  // });
 });
 
 
